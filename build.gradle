@@ -1,0 +1,17 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.mparticle:android-kit-plugin:' + project.version
+    }
+}
+
+apply plugin: 'com.mparticle.kit'
+
+android {
+    defaultConfig {
+        minSdkVersion 15
+    }
+}
