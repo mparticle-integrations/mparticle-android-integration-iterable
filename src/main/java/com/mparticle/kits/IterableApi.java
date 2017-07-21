@@ -24,7 +24,7 @@ public class IterableApi {
                 new IterableRequest().execute(request);
             } else {
                 if (onCallback != null) {
-                    onCallback.execute(uri);
+                    onCallback.execute(null);
                 }
             }
         } else {
