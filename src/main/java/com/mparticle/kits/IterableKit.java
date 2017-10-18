@@ -3,21 +3,26 @@ package com.mparticle.kits;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import com.mparticle.DeepLinkResult;
+
+import com.mparticle.AttributionResult;
+import com.mparticle.MParticle;
+import com.mparticle.activity.MPActivity;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 
-public class IterableKit extends KitIntegration implements KitIntegration.ActivityListener {
+public class IterableKit extends KitIntegration implements KitIntegration.ActivityListener, KitIntegration.ApplicationStateListener {
 
 
-    private String deeplinkUrl;
+    private String attributionUrl;
     private Set<String> previousLinks = new HashSet<String>();
 
     @Override
     protected List<ReportingMessage> onKitCreate(Map<String, String> settings, Context context) {
+        checkForAttribution();
         return null;
     }
 
@@ -31,12 +36,25 @@ public class IterableKit extends KitIntegration implements KitIntegration.Activi
         return null;
     }
 
-    @Override
-    public void checkForDeepLink() {
-        if(!KitUtils.isEmpty(deeplinkUrl)) {
-            DeepLinkResult deepLinkResult = new DeepLinkResult().setLink(deeplinkUrl);
-            deepLinkResult.setServiceProviderId(getConfiguration().getKitId());
-            getKitManager().onResult(deepLinkResult);
+    private void checkForAttribution() {
+        Activity activity = MParticle.getInstance().getAppStateManager().getCurrentActivity().get();
+        if (activity != null) {
+            String currentLink = activity.getIntent().getDataString();
+            if (currentLink != null && !currentLink.isEmpty() && !previousLinks.contains(currentLink)) {
+                previousLinks.add(currentLink);
+                IterableHelper.IterableActionHandler clickCallback = new IterableHelper.IterableActionHandler() {
+                    @Override
+                    public void execute(String result) {
+                        if (!KitUtils.isEmpty(result)) {
+                            AttributionResult attributionResult = new AttributionResult().setLink(result);
+                            attributionResult.setServiceProviderId(getConfiguration().getKitId());
+                            getKitManager().onResult(attributionResult);
+                        }
+                    }
+                };
+
+                IterableApi.getAndTrackDeeplink(currentLink, clickCallback);
+            }
         }
     }
 
@@ -52,20 +70,6 @@ public class IterableKit extends KitIntegration implements KitIntegration.Activi
 
     @Override
     public List<ReportingMessage> onActivityResumed(Activity activity) {
-        String currentLink = activity.getIntent().getDataString();
-        if (currentLink != null && !currentLink.isEmpty() && !previousLinks.contains(currentLink)){
-            previousLinks.add(currentLink);
-            IterableHelper.IterableActionHandler clickCallback = new IterableHelper.IterableActionHandler() {
-                @Override
-                public void execute(String result) {
-                    deeplinkUrl = result;
-                    checkForDeepLink();
-                }
-            };
-
-            IterableApi.getAndTrackDeeplink(currentLink, clickCallback);
-        }
-
         return null;
     }
 
@@ -87,5 +91,15 @@ public class IterableKit extends KitIntegration implements KitIntegration.Activi
     @Override
     public List<ReportingMessage> onActivityDestroyed(Activity activity) {
         return null;
+    }
+
+    @Override
+    public void onApplicationForeground() {
+        checkForAttribution();
+    }
+
+    @Override
+    public void onApplicationBackground() {
+
     }
 }
