@@ -11,7 +11,7 @@ mParticle's Iterable integration is predominantly server-side. This kit is an op
 
     ```groovy
     dependencies {
-        compile 'com.mparticle:android-iterable-kit:4+'
+        compile 'com.mparticle:android-iterable-kit:5+'
     }
     ```
 
