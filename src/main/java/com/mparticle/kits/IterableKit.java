@@ -6,7 +6,6 @@ import android.os.Bundle;
 
 import com.mparticle.AttributionResult;
 import com.mparticle.MParticle;
-import com.mparticle.activity.MPActivity;
 
 import java.util.HashSet;
 import java.util.List;
