@@ -1,15 +1,10 @@
 package com.mparticle.kits;
 
 
-import android.content.Context;
-
 import org.junit.Test;
-import org.mockito.Mockito;
 
-import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 

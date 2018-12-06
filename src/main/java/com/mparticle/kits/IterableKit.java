@@ -36,7 +36,7 @@ public class IterableKit extends KitIntegration implements KitIntegration.Activi
     }
 
     private void checkForAttribution() {
-        Activity activity = MParticle.getInstance().getAppStateManager().getCurrentActivity().get();
+        Activity activity = getKitManager().getCurrentActivity().get();
         if (activity != null) {
             String currentLink = activity.getIntent().getDataString();
             if (currentLink != null && !currentLink.isEmpty() && !previousLinks.contains(currentLink)) {
