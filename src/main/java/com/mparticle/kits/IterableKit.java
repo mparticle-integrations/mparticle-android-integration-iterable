@@ -27,14 +27,29 @@ import java.util.Set;
 
 public class IterableKit extends KitIntegration implements KitIntegration.ActivityListener, KitIntegration.ApplicationStateListener, KitIntegration.IdentityListener, KitIntegration.PushListener {
     private Set<String> previousLinks = new HashSet<String>();
+    private boolean mpidEnabled = false;
+
+    private final static String SETTING_API_KEY = "apiKey";
+    private final static String SETTING_GCM_INTEGRATION_NAME = "gcmIntegrationName";
+    private final static String SETTING_USER_ID_FIELD = "userIdField";
+
+    private final static String IDENTITY_CUSTOMER_ID = "customerId";
+    private final static String IDENTITY_MPID = "mpid";
+
+    private final static String INTEGRATION_ATTRIBUTE_KIT_VERSION_CODE = "Iterable.kitVersionCode";
+    private final static String INTEGRATION_ATTRIBUTE_SDK_VERSION = "Iterable.sdkVersion";
 
     @Override
     protected List<ReportingMessage> onKitCreate(Map<String, String> settings, Context context) {
         try {
             checkForAttribution();
+
+            String userIdField = settings.get(SETTING_USER_ID_FIELD);
+            mpidEnabled = userIdField != null && userIdField.equals(IDENTITY_MPID);
+
             IterableConfig.Builder configBuilder = new IterableConfig.Builder();
-            configBuilder.setPushIntegrationName(settings.get("gcmIntegrationName"));
-            IterableApi.initialize(context, settings.get("apiKey"), configBuilder.build());
+            configBuilder.setPushIntegrationName(settings.get(SETTING_GCM_INTEGRATION_NAME));
+            IterableApi.initialize(context, settings.get(SETTING_API_KEY), configBuilder.build());
             initIntegrationAttributes();
         } catch(Exception e) {
             Log.e("IterableKit", "Iterable Kit initialization exception", e);
@@ -54,8 +69,8 @@ public class IterableKit extends KitIntegration implements KitIntegration.Activi
 
     private void initIntegrationAttributes() {
         HashMap<String, String> integrationAttributes = new HashMap<>();
-        integrationAttributes.put("kitVersionCode", String.valueOf(BuildConfig.VERSION_CODE));
-        integrationAttributes.put("sdkVersion", com.iterable.iterableapi.BuildConfig.ITERABLE_SDK_VERSION);
+        integrationAttributes.put(INTEGRATION_ATTRIBUTE_KIT_VERSION_CODE, String.valueOf(BuildConfig.VERSION_CODE));
+        integrationAttributes.put(INTEGRATION_ATTRIBUTE_SDK_VERSION, com.iterable.iterableapi.BuildConfig.ITERABLE_SDK_VERSION);
         setIntegrationAttributes(integrationAttributes);
     }
 
@@ -158,8 +173,11 @@ public class IterableKit extends KitIntegration implements KitIntegration.Activi
         if (email != null && !email.isEmpty()) {
             IterableApi.getInstance().setEmail(email);
         }
-        else if (userId != null && !userId.isEmpty()) {
+        else if (!mpidEnabled && userId != null && !userId.isEmpty()) {
             IterableApi.getInstance().setUserId(userId);
+        }
+        else if (mpidEnabled && mParticleUser.getId() != 0) {
+            IterableApi.getInstance().setEmail(mParticleUser.getId() + "@placeholder.email");
         }
         else {
             // No identifier, log out
