@@ -9,6 +9,7 @@ import android.util.Log;
 import com.google.firebase.messaging.RemoteMessage;
 import com.iterable.iterableapi.IterableApi;
 import com.iterable.iterableapi.IterableConfig;
+import com.iterable.iterableapi.IterableConfigHelper;
 import com.iterable.iterableapi.IterableConstants;
 import com.iterable.iterableapi.IterableFirebaseMessagingService;
 import com.iterable.iterableapi.IterableHelper;
@@ -29,6 +30,8 @@ public class IterableKit extends KitIntegration implements KitIntegration.Activi
     private Set<String> previousLinks = new HashSet<String>();
     private boolean mpidEnabled = false;
 
+    private static IterableConfig customConfig;
+
     private final static String SETTING_API_KEY = "apiKey";
     private final static String SETTING_GCM_INTEGRATION_NAME = "gcmIntegrationName";
     private final static String SETTING_USER_ID_FIELD = "userIdField";
@@ -39,6 +42,14 @@ public class IterableKit extends KitIntegration implements KitIntegration.Activi
     private final static String INTEGRATION_ATTRIBUTE_KIT_VERSION_CODE = "Iterable.kitVersionCode";
     private final static String INTEGRATION_ATTRIBUTE_SDK_VERSION = "Iterable.sdkVersion";
 
+    /**
+     * Set a custom config to be used when initializing Iterable SDK
+     * @param config `IterableConfig` instance with configuration data for Iterable SDK
+     */
+    public static void setCustomConfig(IterableConfig config) {
+        customConfig = config;
+    }
+
     @Override
     protected List<ReportingMessage> onKitCreate(Map<String, String> settings, Context context) {
         try {
@@ -47,7 +58,7 @@ public class IterableKit extends KitIntegration implements KitIntegration.Activi
             String userIdField = settings.get(SETTING_USER_ID_FIELD);
             mpidEnabled = userIdField != null && userIdField.equals(IDENTITY_MPID);
 
-            IterableConfig.Builder configBuilder = new IterableConfig.Builder();
+            IterableConfig.Builder configBuilder = IterableConfigHelper.createConfigBuilderFromIterableConfig(customConfig);
             configBuilder.setPushIntegrationName(settings.get(SETTING_GCM_INTEGRATION_NAME));
             IterableApi.initialize(context, settings.get(SETTING_API_KEY), configBuilder.build());
             initIntegrationAttributes();
