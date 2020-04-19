@@ -165,21 +165,50 @@ public class IterableKit extends KitIntegration implements KitIntegration.Activi
         updateIdentity(mParticleUser);
     }
 
+    private boolean isEmpty(String string) {
+        return string == null || "".equals(string);
+    }
+
+    private String getPlaceholderEmail(MParticleUser mParticleUser) {
+        String id = null;
+        if (mpidEnabled) {
+            if (mParticleUser.getId() != 0) {
+                id = Long.toString(mParticleUser.getId());
+            }
+        } else {
+            id = IterableDeviceIdHelper.getGoogleAdId(getContext());
+
+            if (isEmpty(id)) {
+                id = IterableDeviceIdHelper.getAndroidID(getContext());
+            }
+
+            if (isEmpty(id)) {
+                Map<MParticle.IdentityType, String> userIdentities = mParticleUser.getUserIdentities();
+                id = userIdentities.get(MParticle.IdentityType.CustomerId);
+            }
+
+            if (isEmpty(id)) {
+                id = MParticle.getInstance().Identity().getDeviceApplicationStamp();
+            }
+        }
+
+        if (id != null) {
+            return id + "@placeholder.email";
+        } else {
+            return null;
+        }
+    }
+
     private void updateIdentity(MParticleUser mParticleUser) {
         Map<MParticle.IdentityType, String> userIdentities = mParticleUser.getUserIdentities();
         String email = userIdentities.get(MParticle.IdentityType.Email);
-        String userId = userIdentities.get(MParticle.IdentityType.CustomerId);
+        String placeholderEmail = getPlaceholderEmail(mParticleUser);
 
         if (email != null && !email.isEmpty()) {
             IterableApi.getInstance().setEmail(email);
-        }
-        else if (!mpidEnabled && userId != null && !userId.isEmpty()) {
-            IterableApi.getInstance().setUserId(userId);
-        }
-        else if (mpidEnabled && mParticleUser.getId() != 0) {
-            IterableApi.getInstance().setEmail(mParticleUser.getId() + "@placeholder.email");
-        }
-        else {
+        } else if (!isEmpty(placeholderEmail)) {
+            IterableApi.getInstance().setEmail(placeholderEmail);
+        } else {
             // No identifier, log out
             IterableApi.getInstance().setEmail(null);
         }
