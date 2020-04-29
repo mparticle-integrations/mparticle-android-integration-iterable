@@ -52,19 +52,15 @@ public class IterableKit extends KitIntegration implements KitIntegration.Activi
 
     @Override
     protected List<ReportingMessage> onKitCreate(Map<String, String> settings, Context context) {
-        try {
-            checkForAttribution();
+        checkForAttribution();
 
-            String userIdField = settings.get(SETTING_USER_ID_FIELD);
-            mpidEnabled = userIdField != null && userIdField.equals(IDENTITY_MPID);
+        String userIdField = settings.get(SETTING_USER_ID_FIELD);
+        mpidEnabled = userIdField != null && userIdField.equals(IDENTITY_MPID);
 
-            IterableConfig.Builder configBuilder = IterableConfigHelper.createConfigBuilderFromIterableConfig(customConfig);
-            configBuilder.setPushIntegrationName(settings.get(SETTING_GCM_INTEGRATION_NAME));
-            IterableApi.initialize(context, settings.get(SETTING_API_KEY), configBuilder.build());
-            initIntegrationAttributes();
-        } catch(Exception e) {
-            Log.e("IterableKit", "Iterable Kit initialization exception", e);
-        }
+        IterableConfig.Builder configBuilder = IterableConfigHelper.createConfigBuilderFromIterableConfig(customConfig);
+        configBuilder.setPushIntegrationName(settings.get(SETTING_GCM_INTEGRATION_NAME));
+        IterableApi.initialize(context, settings.get(SETTING_API_KEY), configBuilder.build());
+        initIntegrationAttributes();
         return null;
     }
 
