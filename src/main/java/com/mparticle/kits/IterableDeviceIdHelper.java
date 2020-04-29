@@ -3,9 +3,12 @@ package com.mparticle.kits;
 import android.content.Context;
 import android.provider.Settings;
 
+import androidx.annotation.WorkerThread;
+
 import java.lang.reflect.Method;
 
 class IterableDeviceIdHelper {
+    @WorkerThread
     static String getGoogleAdId(Context context) {
         try {
             Class AdvertisingIdClient = Class

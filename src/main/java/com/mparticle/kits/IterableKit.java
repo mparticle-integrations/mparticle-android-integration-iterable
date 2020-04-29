@@ -17,6 +17,7 @@ import com.mparticle.AttributionResult;
 import com.mparticle.MParticle;
 import com.mparticle.identity.MParticleUser;
 import com.mparticle.kits.iterable.BuildConfig;
+import com.mparticle.kits.iterable.Future;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -24,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 
 public class IterableKit extends KitIntegration implements KitIntegration.ActivityListener, KitIntegration.ApplicationStateListener, KitIntegration.IdentityListener, KitIntegration.PushListener {
@@ -176,49 +178,66 @@ public class IterableKit extends KitIntegration implements KitIntegration.Activi
         return string == null || "".equals(string);
     }
 
-    private String getPlaceholderEmail(MParticleUser mParticleUser) {
-        String id = null;
-        if (mpidEnabled) {
-            if (mParticleUser.getId() != 0) {
-                id = Long.toString(mParticleUser.getId());
-            }
-        } else {
-            id = IterableDeviceIdHelper.getGoogleAdId(getContext());
+    private Future<String> getPlaceholderEmail(final MParticleUser mParticleUser) {
+        return Future.runAsync(new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                String id = null;
+                if (mpidEnabled) {
+                    if (mParticleUser.getId() != 0) {
+                        id = Long.toString(mParticleUser.getId());
+                    }
+                } else {
+                    id = IterableDeviceIdHelper.getGoogleAdId(getContext());
 
-            if (isEmpty(id)) {
-                id = IterableDeviceIdHelper.getAndroidID(getContext());
-            }
+                    if (isEmpty(id)) {
+                        id = IterableDeviceIdHelper.getAndroidID(getContext());
+                    }
 
-            if (isEmpty(id)) {
-                Map<MParticle.IdentityType, String> userIdentities = mParticleUser.getUserIdentities();
-                id = userIdentities.get(MParticle.IdentityType.CustomerId);
-            }
+                    if (isEmpty(id)) {
+                        Map<MParticle.IdentityType, String> userIdentities = mParticleUser.getUserIdentities();
+                        id = userIdentities.get(MParticle.IdentityType.CustomerId);
+                    }
 
-            if (isEmpty(id)) {
-                id = MParticle.getInstance().Identity().getDeviceApplicationStamp();
-            }
-        }
+                    if (isEmpty(id)) {
+                        id = MParticle.getInstance().Identity().getDeviceApplicationStamp();
+                    }
+                }
 
-        if (id != null) {
-            return id + "@placeholder.email";
-        } else {
-            return null;
-        }
+                if (id != null) {
+                    return id + "@placeholder.email";
+                } else {
+                    return null;
+                }
+            }
+        });
     }
 
     private void updateIdentity(MParticleUser mParticleUser) {
         Map<MParticle.IdentityType, String> userIdentities = mParticleUser.getUserIdentities();
-        String email = userIdentities.get(MParticle.IdentityType.Email);
-        String placeholderEmail = getPlaceholderEmail(mParticleUser);
+        final String email = userIdentities.get(MParticle.IdentityType.Email);
+        Future<String> placeholderEmailFt = getPlaceholderEmail(mParticleUser);
 
-        if (email != null && !email.isEmpty()) {
-            IterableApi.getInstance().setEmail(email);
-        } else if (!isEmpty(placeholderEmail)) {
-            IterableApi.getInstance().setEmail(placeholderEmail);
-        } else {
-            // No identifier, log out
-            IterableApi.getInstance().setEmail(null);
-        }
+        placeholderEmailFt
+                .onSuccess(new Future.SuccessCallback<String>() {
+                    @Override
+                    public void onSuccess(String placeholderEmail) {
+                        if (email != null && !email.isEmpty()) {
+                            IterableApi.getInstance().setEmail(email);
+                        } else if (!isEmpty(placeholderEmail)) {
+                            IterableApi.getInstance().setEmail(placeholderEmail);
+                        } else {
+                            // No identifier, log out
+                            IterableApi.getInstance().setEmail(null);
+                        }
+                    }
+                })
+                .onFailure(new Future.FailureCallback() {
+                    @Override
+                    public void onFailure(Throwable throwable) {
+                        Log.e("IterableKit", "Error while getting the placeholder email", throwable);
+                    }
+                });
     }
 
     @Override
