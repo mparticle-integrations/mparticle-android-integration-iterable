@@ -84,23 +84,26 @@ public class IterableKit extends KitIntegration implements KitIntegration.Activi
     }
 
     private void checkForAttribution() {
-        WeakReference<Activity> activity = getKitManager().getCurrentActivity();
-        if (activity != null && activity.get() != null) {
-            String currentLink = activity.get().getIntent().getDataString();
-            if (currentLink != null && !currentLink.isEmpty() && !previousLinks.contains(currentLink)) {
-                previousLinks.add(currentLink);
-                IterableHelper.IterableActionHandler clickCallback = new IterableHelper.IterableActionHandler() {
-                    @Override
-                    public void execute(String result) {
-                        if (!KitUtils.isEmpty(result)) {
-                            AttributionResult attributionResult = new AttributionResult().setLink(result);
-                            attributionResult.setServiceProviderId(getConfiguration().getKitId());
-                            getKitManager().onResult(attributionResult);
+        WeakReference<Activity> activityRef = getKitManager().getCurrentActivity();
+        if (activityRef != null) {
+            Activity activity = activityRef.get();
+            if (activity != null) {
+                String currentLink = activity.getIntent().getDataString();
+                if (currentLink != null && !currentLink.isEmpty() && !previousLinks.contains(currentLink)) {
+                    previousLinks.add(currentLink);
+                    IterableHelper.IterableActionHandler clickCallback = new IterableHelper.IterableActionHandler() {
+                        @Override
+                        public void execute(String result) {
+                            if (!KitUtils.isEmpty(result)) {
+                                AttributionResult attributionResult = new AttributionResult().setLink(result);
+                                attributionResult.setServiceProviderId(getConfiguration().getKitId());
+                                getKitManager().onResult(attributionResult);
+                            }
                         }
-                    }
-                };
+                    };
 
-                IterableApi.getAndTrackDeeplink(currentLink, clickCallback);
+                    IterableApi.getAndTrackDeeplink(currentLink, clickCallback);
+                }
             }
         }
     }
