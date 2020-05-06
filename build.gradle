@@ -1,5 +1,5 @@
 buildscript {
-    if (!project.hasProperty('version') || project.version.equals('unspecified')) {
+    if (!project.hasProperty('version') || project.version.equals('unspecified') || project.version.toString().contains('beta')) {
         project.version = '+'
     }
 
@@ -19,4 +19,7 @@ android {
     defaultConfig {
         minSdkVersion 15
     }
+}
+dependencies {
+    api 'com.iterable:iterableapi:3.2.2'
 }
