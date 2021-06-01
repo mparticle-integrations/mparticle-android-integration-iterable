@@ -8,7 +8,6 @@ public class IterableConfigHelper {
             builder.setUrlHandler(config.urlHandler);
             builder.setCustomActionHandler(config.customActionHandler);
             builder.setAutoPushRegistration(config.autoPushRegistration);
-            builder.setLegacyGCMSenderId(config.legacyGCMSenderId);
             builder.setCheckForDeferredDeeplink(config.checkForDeferredDeeplink);
             builder.setLogLevel(config.logLevel);
             builder.setInAppHandler(config.inAppHandler);
