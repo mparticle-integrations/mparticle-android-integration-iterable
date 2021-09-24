@@ -1,8 +1,9 @@
-name: Dependabot automerge
+name: "Dependabot Automerge"
 on: pull_request_target
 jobs:
   unit-tests:
     runs-on: ubuntu-latest
+    name: "Unit Tests"
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 1.8
@@ -15,7 +16,7 @@ jobs:
           gradle-version: 6.6.1
           arguments: clean assemble test
   automerge:
-    name: Rebase dependabot PRs
+    name: "Automerge Dependabot PR"
     needs: [unit-tests]
     if: ${{github.actor == 'dependabot[bot]' && github.event_name == 'pull_request_target'}}
     runs-on: ubuntu-latest
@@ -23,7 +24,6 @@ jobs:
       - name: Rebase Dependabot PR
         uses: actions/github-script@v3
         with:
-          github-token: ${{secrets.MP_INTEGRATIONS_SEMANTIC_RELEASE_BOT}}
           script: |
             github.pulls.merge({
                 owner: context.repo.owner,
