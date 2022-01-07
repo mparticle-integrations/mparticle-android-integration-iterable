@@ -28,11 +28,4 @@ class IterableDeviceIdHelper {
         } catch (Exception ignored) {}
         return null;
     }
-
-    static String getAndroidID(Context context) {
-        try {
-            return Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
-        } catch (Exception ignored) {}
-        return null;
-    }
 }

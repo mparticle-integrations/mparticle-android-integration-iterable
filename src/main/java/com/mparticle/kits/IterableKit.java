@@ -194,7 +194,7 @@ public class IterableKit extends KitIntegration implements KitIntegration.Activi
                     id = IterableDeviceIdHelper.getGoogleAdId(getContext());
 
                     if (isEmpty(id)) {
-                        id = IterableDeviceIdHelper.getAndroidID(getContext());
+                        id = KitUtils.getAndroidID(getContext());
                     }
 
                     if (isEmpty(id)) {
