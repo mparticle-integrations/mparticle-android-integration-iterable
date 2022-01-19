@@ -22,5 +22,5 @@ android {
     }
 }
 dependencies {
-    api 'com.iterable:iterableapi:3.3.9'
+    api 'com.iterable:iterableapi:3.4.2'
 }
