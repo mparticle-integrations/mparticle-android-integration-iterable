@@ -101,8 +101,7 @@ public class IterableKit extends KitIntegration implements KitIntegration.Activi
                             }
                         }
                     };
-
-                    IterableApi.getAndTrackDeeplink(currentLink, clickCallback);
+                    IterableApi.getInstance().getAndTrackDeepLink(currentLink, clickCallback);
                 }
             }
         }
