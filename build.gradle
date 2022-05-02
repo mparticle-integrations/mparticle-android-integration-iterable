@@ -18,7 +18,7 @@ apply plugin: 'com.mparticle.kit'
 
 android {
     defaultConfig {
-        minSdkVersion 15
+        minSdkVersion 16
     }
 }
 dependencies {
