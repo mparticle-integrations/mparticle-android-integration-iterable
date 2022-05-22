@@ -20,7 +20,7 @@ mParticle's Iterable integration is predominantly server-side. This kit is an op
 
 ### Documentation
 
-[Iterable Integration Docs](http://docs.mparticle.com/?java#iterable)
+[Iterable Integration Docs](https://docs.mparticle.com/integrations/iterable/audience/)
 
 ### License
 
