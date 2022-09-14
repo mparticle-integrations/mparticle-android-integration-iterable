@@ -75,7 +75,7 @@ class IterableKit : KitIntegration(), ActivityListener, ApplicationStateListener
         }
     }
 
-    override fun onActivityCreated(activity: Activity, bundle: Bundle): List<ReportingMessage> =
+    override fun onActivityCreated(activity: Activity, bundle: Bundle?): List<ReportingMessage> =
         emptyList()
 
     override fun onActivityStarted(activity: Activity): List<ReportingMessage> = emptyList()
@@ -88,7 +88,7 @@ class IterableKit : KitIntegration(), ActivityListener, ApplicationStateListener
 
     override fun onActivitySaveInstanceState(
         activity: Activity,
-        bundle: Bundle
+        bundle: Bundle?
     ): List<ReportingMessage> = emptyList()
 
 
