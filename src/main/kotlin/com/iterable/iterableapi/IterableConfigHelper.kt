@@ -13,6 +13,7 @@ object IterableConfigHelper {
                 setLogLevel(config.logLevel)
                 setInAppHandler(config.inAppHandler)
                 setInAppDisplayInterval(config.inAppDisplayInterval)
+                setAllowedProtocols(config.allowedProtocols)
             }
         }
         return builder
