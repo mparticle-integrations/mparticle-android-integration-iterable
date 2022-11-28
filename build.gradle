@@ -1,9 +1,7 @@
 buildscript {
-    ext.kotlin_version = '1.7.21'
     if (!project.hasProperty('version') || project.version.equals('unspecified') || project.version.toString().contains('beta')) {
         project.version = '+'
     }
-
     repositories {
         google()
         mavenLocal()
@@ -12,11 +10,24 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:7.3.1'
         classpath 'com.mparticle:android-kit-plugin:' + project.version
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.21"
     }
 }
 
+plugins {
+    id "org.sonarqube" version "3.5.0.2730"
+    id "org.jlleitschuh.gradle.ktlint" version "11.0.0"
+}
+
+sonarqube {
+    properties {
+        property "sonar.projectKey", "mparticle-android-integration-iterable"
+        property "sonar.organization", "mparticle"
+        property "sonar.host.url", "https://sonarcloud.io"
+    }
+}
+
+apply plugin: 'org.jlleitschuh.gradle.ktlint'
 apply plugin: 'com.mparticle.kit'
 apply plugin: 'kotlin-android'
 
