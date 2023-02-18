@@ -204,11 +204,6 @@ class IterableKit : KitIntegration(), ActivityListener, ApplicationStateListener
                 }
             })
         }
-
-
-
-
-
     }
 
     override fun willHandlePushMessage(intent: Intent): Boolean {
