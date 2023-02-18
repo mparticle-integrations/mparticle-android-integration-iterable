@@ -135,7 +135,7 @@ class IterableKit : KitIntegration(), ActivityListener, ApplicationStateListener
         return string == null || "" == string
     }
 
-    private fun getPlaceholderEmail(mParticleUser: MParticleUser): Future<String?> {
+    private fun getUserId(mParticleUser: MParticleUser): Future<String?> {
         return Future.runAsync {
             var id: String? = null
             if (mpidEnabled) {
@@ -155,21 +155,39 @@ class IterableKit : KitIntegration(), ActivityListener, ApplicationStateListener
                     id = MParticle.getInstance()?.Identity()?.deviceApplicationStamp
                 }
             }
-            if (id != null) {
-                "$id@placeholder.email"
-            } else {
-                null
-            }
+            id
+        }
+    }
+
+    private fun getPlaceholderEmail(userId: String?): String? {
+        if (userId != null) {
+            return "$userId@placeholder.email"
+        } else {
+            return null
         }
     }
 
     private fun updateIdentity(mParticleUser: MParticleUser) {
-        val userIdentities = mParticleUser.userIdentities
-        val email = userIdentities[IdentityType.Email]
-        val placeholderEmailFt = getPlaceholderEmail(mParticleUser)
-        placeholderEmailFt
-            .onSuccess(object : Future.SuccessCallback<String?> {
-                override fun onSuccess(placeholderEmail: String?) {
+        val userId = getUserId(mParticleUser)
+
+        if (prefersUserId) {
+            userId.onSuccess(object : Future.SuccessCallback<String?> {
+                override fun onSuccess(userId: String?) {
+                    IterableApi.getInstance().setUserId(userId)
+                    return
+                }
+            }).onFailure(object : Future.FailureCallback {
+                override fun onFailure(throwable: Throwable?) {
+                    Log.e(ITERABLE_KIT_ERROR_TAG, ITERABLE_KIT_ERROR_MESSAGE, throwable)
+                }
+            })
+        } else {
+            val userIdentities = mParticleUser.userIdentities
+            val email = userIdentities[IdentityType.Email]
+
+            userId.onSuccess(object : Future.SuccessCallback<String?> {
+                override fun onSuccess(userId: String?) {
+                    val placeholderEmail = getPlaceholderEmail(userId)
                     if (!email.isNullOrEmpty()) {
                         IterableApi.getInstance().setEmail(email)
                     } else if (!isEmpty(placeholderEmail)) {
@@ -178,13 +196,19 @@ class IterableKit : KitIntegration(), ActivityListener, ApplicationStateListener
                         // No identifier, log out
                         IterableApi.getInstance().setEmail(null)
                     }
+                    return
                 }
-            })
-            .onFailure(object : Future.FailureCallback {
+            }).onFailure(object : Future.FailureCallback {
                 override fun onFailure(throwable: Throwable?) {
                     Log.e(ITERABLE_KIT_ERROR_TAG, ITERABLE_KIT_ERROR_MESSAGE, throwable)
                 }
             })
+        }
+
+
+
+
+
     }
 
     override fun willHandlePushMessage(intent: Intent): Boolean {
@@ -205,6 +229,7 @@ class IterableKit : KitIntegration(), ActivityListener, ApplicationStateListener
     }
 
     companion object {
+        var prefersUserId = false
         private var customConfig: IterableConfig? = null
         private const val SETTING_API_KEY = "apiKey"
         private const val SETTING_GCM_INTEGRATION_NAME = "gcmIntegrationName"
