@@ -6,14 +6,21 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import com.google.firebase.messaging.RemoteMessage
-import com.iterable.iterableapi.*
 import com.iterable.iterableapi.BuildConfig
+import com.iterable.iterableapi.IterableApi
+import com.iterable.iterableapi.IterableConfig
+import com.iterable.iterableapi.IterableConfigHelper
+import com.iterable.iterableapi.IterableConstants
+import com.iterable.iterableapi.IterableFirebaseMessagingService
 import com.iterable.iterableapi.IterableHelper.IterableActionHandler
 import com.mparticle.AttributionResult
 import com.mparticle.MParticle
 import com.mparticle.MParticle.IdentityType
 import com.mparticle.identity.MParticleUser
-import com.mparticle.kits.KitIntegration.*
+import com.mparticle.kits.KitIntegration.ActivityListener
+import com.mparticle.kits.KitIntegration.ApplicationStateListener
+import com.mparticle.kits.KitIntegration.IdentityListener
+import com.mparticle.kits.KitIntegration.PushListener
 import com.mparticle.kits.iterable.Future
 
 class IterableKit : KitIntegration(), ActivityListener, ApplicationStateListener, IdentityListener,
@@ -159,51 +166,39 @@ class IterableKit : KitIntegration(), ActivityListener, ApplicationStateListener
         }
     }
 
-    private fun getPlaceholderEmail(userId: String?): String? {
-        if (userId != null) {
-            return "$userId@placeholder.email"
+    private fun String?.getPlaceholderEmail(): String? = this?.let { "$it@placeholder.email" }
+
+    private fun handleOnSuccess(userId: String?, mParticleUser: MParticleUser) {
+        if (prefersUserId) {
+            IterableApi.getInstance().setUserId(userId)
         } else {
-            return null
+            val userIdentities = mParticleUser.userIdentities
+            val mpEmail = userIdentities[IdentityType.Email]
+            val placeholderEmail = userId.getPlaceholderEmail()
+
+            val email = if (!mpEmail.isNullOrEmpty()) {
+                mpEmail
+            } else if (!isEmpty(placeholderEmail)) {
+                placeholderEmail
+            } else null
+
+            IterableApi.getInstance().setEmail(email)
         }
     }
 
     private fun updateIdentity(mParticleUser: MParticleUser) {
         val userId = getUserId(mParticleUser)
 
-        if (prefersUserId) {
-            userId.onSuccess(object : Future.SuccessCallback<String?> {
-                override fun onSuccess(userId: String?) {
-                    IterableApi.getInstance().setUserId(userId)
-                    return
-                }
-            }).onFailure(object : Future.FailureCallback {
-                override fun onFailure(throwable: Throwable?) {
-                    Log.e(ITERABLE_KIT_ERROR_TAG, ITERABLE_KIT_ERROR_MESSAGE, throwable)
-                }
-            })
-        } else {
-            val userIdentities = mParticleUser.userIdentities
-            val email = userIdentities[IdentityType.Email]
-
-            userId.onSuccess(object : Future.SuccessCallback<String?> {
-                override fun onSuccess(userId: String?) {
-                    val placeholderEmail = getPlaceholderEmail(userId)
-                    if (!email.isNullOrEmpty()) {
-                        IterableApi.getInstance().setEmail(email)
-                    } else if (!isEmpty(placeholderEmail)) {
-                        IterableApi.getInstance().setEmail(placeholderEmail)
-                    } else {
-                        // No identifier, log out
-                        IterableApi.getInstance().setEmail(null)
-                    }
-                    return
-                }
-            }).onFailure(object : Future.FailureCallback {
-                override fun onFailure(throwable: Throwable?) {
-                    Log.e(ITERABLE_KIT_ERROR_TAG, ITERABLE_KIT_ERROR_MESSAGE, throwable)
-                }
-            })
-        }
+        userId.onSuccess(object : Future.SuccessCallback<String?> {
+            override fun onSuccess(userId: String?) {
+                handleOnSuccess(userId, mParticleUser)
+                return
+            }
+        }).onFailure(object : Future.FailureCallback {
+            override fun onFailure(throwable: Throwable?) {
+                Log.e(ITERABLE_KIT_ERROR_TAG, ITERABLE_KIT_ERROR_MESSAGE, throwable)
+            }
+        })
     }
 
     override fun willHandlePushMessage(intent: Intent): Boolean {
