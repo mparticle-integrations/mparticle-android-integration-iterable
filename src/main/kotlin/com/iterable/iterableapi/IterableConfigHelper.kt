@@ -14,6 +14,7 @@ object IterableConfigHelper {
                 setInAppHandler(config.inAppHandler)
                 setInAppDisplayInterval(config.inAppDisplayInterval)
                 setAllowedProtocols(config.allowedProtocols)
+                setDataRegion(config.dataRegion)
             }
         }
         return builder
