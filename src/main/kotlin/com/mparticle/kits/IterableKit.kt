@@ -53,8 +53,6 @@ class IterableKit : KitIntegration(), ActivityListener, ApplicationStateListener
 
     private fun initIntegrationAttributes() {
         val integrationAttributes = HashMap<String, String>()
-        integrationAttributes[INTEGRATION_ATTRIBUTE_KIT_VERSION_CODE] =
-            BuildConfig.VERSION_CODE.toString()
         integrationAttributes[INTEGRATION_ATTRIBUTE_SDK_VERSION] =
             BuildConfig.ITERABLE_SDK_VERSION
         setIntegrationAttributes(integrationAttributes)
