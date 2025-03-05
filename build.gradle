@@ -33,10 +33,10 @@ apply plugin: 'kotlin-android'
 
 android {
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 21
     }
 }
 
 dependencies {
-    api 'com.iterable:iterableapi:3.4.9'
+    api 'com.iterable:iterableapi:3.5.10'
 }
