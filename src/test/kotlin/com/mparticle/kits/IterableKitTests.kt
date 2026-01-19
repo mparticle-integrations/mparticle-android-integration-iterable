@@ -7,7 +7,7 @@ import org.mockito.Mockito
 
 class IterableKitTests {
     private val kit: KitIntegration
-         get() = IterableKit()
+        get() = IterableKit()
 
     @Test
     @Throws(Exception::class)

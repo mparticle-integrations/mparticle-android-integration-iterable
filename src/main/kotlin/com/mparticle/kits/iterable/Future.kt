@@ -5,10 +5,13 @@ import android.os.Looper
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 
-class Future<T> private constructor(callable: Callable<T>) {
+class Future<T> private constructor(
+    callable: Callable<T>,
+) {
     private lateinit var callbackHandler: Handler
     private val successCallbacks: MutableList<SuccessCallback<T>> = ArrayList()
     private val failureCallbacks: MutableList<FailureCallback> = ArrayList()
+
     private fun handleSuccess(result: T) {
         callbackHandler.post {
             var callbacks: List<SuccessCallback<T>>
@@ -49,9 +52,8 @@ class Future<T> private constructor(callable: Callable<T>) {
 
     companion object {
         private val EXECUTOR = Executors.newCachedThreadPool()
-        fun <T> runAsync(callable: Callable<T>): Future<T> {
-            return Future(callable)
-        }
+
+        fun <T> runAsync(callable: Callable<T>): Future<T> = Future(callable)
     }
 
     init {
@@ -67,7 +69,6 @@ class Future<T> private constructor(callable: Callable<T>) {
                     handleFailure(e)
                 }
             } ?: { looper = Looper.getMainLooper() }
-
         }
     }
 }
